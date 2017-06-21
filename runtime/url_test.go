@@ -116,3 +116,38 @@ func TestURLWriter_WriteXIntx(t *testing.T) {
 		t.Errorf("WriteFlag: got %v, want %v", res, expect)
 	}
 }
+
+func TestURLWriter_WritePairs(t *testing.T) {
+	t.Run("pairs", func(t *testing.T) {
+		w := URLWriter{}
+		w.WritePairs("key1", 64, "key2", 8, "key3", true, "key4", "msg msg")
+		res := w.String()
+		expect := "key1=64&key2=8&key3=1&key4=msg+msg"
+		if res != expect {
+			t.Errorf("WritePair: got %v, want %v", res, expect)
+		}
+	})
+
+	t.Run("pairs with flag", func(t *testing.T) {
+		w := URLWriter{}
+		w.WritePairs("key1", 64, "key2", 8, "key3", true, "key4")
+		res := w.String()
+		expect := "key1=64&key2=8&key3=1&key4=1"
+		if res != expect {
+			t.Errorf("WritePair: got %v, want %v", res, expect)
+		}
+	})
+}
+
+func BenchmarkURLWriter_WritePairs(b *testing.B) {
+	values := []interface{}{"k1", "v1", "k2", 2, "k3", true, "k4", 3, "k5", "v5"}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		w := URLWriter{}
+		w.WritePairs(values...)
+		s := w.String()
+		if s == "" {
+			b.Fatalf("bad String result: %v", s)
+		}
+	}
+}

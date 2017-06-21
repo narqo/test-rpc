@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"bytes"
+	"fmt"
 	"net/url"
 	"strconv"
 )
@@ -129,10 +130,11 @@ func (w *URLWriter) String() string {
 }
 
 func (w *URLWriter) writeString(key, value string) {
-	w.buf.Grow(len(key) + len(value) + 2)
-
 	if w.buf.Len() > 0 {
+		w.buf.Grow(len(key) + len(value) + 2)
 		w.buf.WriteByte('&')
+	} else {
+		w.buf.Grow(len(key) + len(value) + 1)
 	}
 
 	w.buf.WriteString(key)
@@ -144,17 +146,12 @@ func (w *URLWriter) WriteString(key, value string) {
 	w.writeString(key, url.QueryEscape(value))
 }
 
-func (w *URLWriter) WritePair(key, value interface{}) {
-	panic("not implemented")
-}
-
 func (w *URLWriter) WriteBool(key string, value bool) {
-	if w.buf.Cap() < len(key) {
-		w.buf.Grow(len(key) + 3)
-	}
-
 	if w.buf.Len() > 0 {
+		w.buf.Grow(len(key) + 3)
 		w.buf.WriteByte('&')
+	} else {
+		w.buf.Grow(len(key) + 2)
 	}
 	w.buf.WriteString(key)
 	w.buf.WriteByte('=')
@@ -169,6 +166,45 @@ func (w *URLWriter) WriteFlag(key string) {
 	w.WriteBool(key, true)
 }
 
+func (w *URLWriter) WritePairs(pairs ...interface{}) error {
+	var key string
+	for i := 0; i < len(pairs); i++ {
+		if key, _ = pairs[i].(string); key == "" {
+			return fmt.Errorf("key must be a string: got %T", pairs[i])
+		}
+		if i+1 >= len(pairs) {
+			w.WriteFlag(key)
+			return nil
+		}
+		i++
+		switch value := pairs[i].(type) {
+		case string:
+			w.WriteString(key, value)
+		case bool:
+			w.WriteBool(key, value)
+		case int:
+			w.writeInt(key, int64(value))
+		case int8:
+			w.writeInt(key, int64(value))
+		case int16:
+			w.writeInt(key, int64(value))
+		case int64:
+			w.writeInt(key, value)
+		case uint:
+			w.writeUint(key, uint64(value))
+		case uint8:
+			w.writeUint(key, uint64(value))
+		case uint16:
+			w.writeUint(key, uint64(value))
+		case uint64:
+			w.writeUint(key, value)
+		case fmt.Stringer:
+			w.WriteString(key, value.String())
+		}
+	}
+	return nil
+}
+
 func (w *URLWriter) writeInt(key string, value int64) {
 	w.writeString(key, strconv.FormatInt(value, 10))
 }
@@ -181,10 +217,10 @@ func (w *URLWriter) WriteInt(key string, value int)     { w.writeInt(key, int64(
 func (w *URLWriter) WriteInt8(key string, value int8)   { w.writeInt(key, int64(value)) }
 func (w *URLWriter) WriteInt16(key string, value int16) { w.writeInt(key, int64(value)) }
 func (w *URLWriter) WriteInt32(key string, value int32) { w.writeInt(key, int64(value)) }
-func (w *URLWriter) WriteInt64(key string, value int64) { w.writeInt(key, int64(value)) }
+func (w *URLWriter) WriteInt64(key string, value int64) { w.writeInt(key, value) }
 
 func (w *URLWriter) WriteUint(key string, value uint)     { w.writeUint(key, uint64(value)) }
 func (w *URLWriter) WriteUint8(key string, value uint8)   { w.writeUint(key, uint64(value)) }
 func (w *URLWriter) WriteUint16(key string, value uint16) { w.writeUint(key, uint64(value)) }
 func (w *URLWriter) WriteUint32(key string, value uint32) { w.writeUint(key, uint64(value)) }
-func (w *URLWriter) WriteUint64(key string, value uint64) { w.writeUint(key, uint64(value)) }
+func (w *URLWriter) WriteUint64(key string, value uint64) { w.writeUint(key, value) }

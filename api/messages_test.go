@@ -28,7 +28,6 @@ func TestMessageRequest_MarshalURL(t *testing.T) {
 
 	for n, test := range testCases {
 		req := test.In.MarshalURL(urlWriter)
-
 		if req != test.Out {
 			t.Errorf("case %v,\n got  %+v,\n want %+v", n, req, test.Out)
 		}
