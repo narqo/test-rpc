@@ -1,4 +1,4 @@
-package unmarshalurl
+package main
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"go/parser"
 	"go/token"
 	"go/types"
+	"log"
 	"path/filepath"
 	"strings"
 )
@@ -47,10 +48,15 @@ func prefixDirectory(dir string, names []string) []string {
 	return ret
 }
 
+type File struct {
+	file *ast.File
+	pkg *types.Package
+}
+
 func (g *Generator) parsePackage(dir string, names []string, text interface{}) error {
 	var files []*File
 	var astFiles []*ast.File
-	g.pkg = new(Package)
+	g.pkg = new(types.Package)
 	fs := token.NewFileSet()
 	for _, name := range names {
 		if !strings.HasSuffix(name, ".go") {
@@ -69,9 +75,16 @@ func (g *Generator) parsePackage(dir string, names []string, text interface{}) e
 	if len(astFiles) == 0 {
 		log.Fatalf("%s: no buildable Go files", dir)
 	}
-	g.pkg.name = astFiles[0].Name.Name
-	g.pkg.files = files
-	g.pkg.dir = dir
-	// Type check the package.
-	g.pkg.check(fs, astFiles)
+	log.Printf("ast files: %+v\n", *astFiles[0])
+	//log.Printf("files: %+v\n", files)
+	//g.pkg.name = astFiles[0].Name.Name
+	//g.pkg.files = files
+	//g.pkg.dir = dir
+	//// Type check the package.
+	//g.pkg.check(fs, astFiles)
+	return nil
+}
+
+func (g *Generator) generate(typeName string) error {
+	return nil
 }

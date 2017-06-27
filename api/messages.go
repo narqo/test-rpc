@@ -10,16 +10,16 @@ import (
 )
 
 type Messages interface {
-	//api:http{"url": "api/v1/messages/message"}
+	//rpc:http url=/api/v1/messages/message
 	Message(context.Context, MessageRequest) (MessageResponse, error)
 
-	//api:http{"url": "api/v1/messages/search"}
+	//rpc:http url=/api/v1/messages/search
 	Search(context.Context, SearchRequest) (SearchResponse, error)
 
-	//api:http{"url": "api/v1/messages/search/suggest"}
+	//rpc:http url=/api/v1/messages/search/suggest
 	SearchSuggest(context.Context, SearchSuggestRequest) (SearchSuggestResponse, error)
 
-	//api:http{"url": "api/v1/messages/status"}
+	//rpc:http url=/api/v1/messages/status
 	Status(context.Context, StatusRequest) (StatusResponse, error)
 }
 
@@ -59,7 +59,7 @@ type StatusResponse struct {
 
 
 type messagesSvc struct {
-	lg logger.Logger
+	log logger.Logger
 }
 
 func (svc *messagesSvc) Message(ctx context.Context, in MessageRequest) (MessageResponse, error) {
